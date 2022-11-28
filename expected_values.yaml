@@ -1,0 +1,14 @@
+
+expected:
+  partitions: |-
+    {
+       "blockdevices": [
+          {"name":"vda", "label":null, "mountpoint":null},
+          {"name":"vda1", "label":null, "mountpoint":null},
+          {"name":"vda2", "label":"COS_OEM", "mountpoint":"/oem"},
+          {"name":"vda3", "label":"COS_STATE", "mountpoint":"/run/initramfs/cos-state"},
+          {"name":"vda4", "label":"COS_RECOVERY", "mountpoint":null},
+          {"name":"vda5", "label":"COS_PERSISTENT", "mountpoint":"/usr/local"},
+          {"name":"vda6", "label":"HARV_LH_DEFAULT", "mountpoint":"/var/lib/harvester/defaultdisk"}
+       ]
+    }
