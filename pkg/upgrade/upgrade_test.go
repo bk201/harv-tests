@@ -2,14 +2,17 @@ package upgrade
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 	"time"
 
 	harvv1api "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
 	rancherv3 "github.com/rancher/rancher/pkg/apis/management.cattle.io/v3"
 	"github.com/rancher/wrangler/v3/pkg/condition"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
@@ -27,40 +30,64 @@ const (
 
 var (
 	testenv    env.Environment
-	testAnswer TestAnswer
+	testConfig TestConfig
 
 	upgradeImageName string
 	upgradeName      string
 )
 
-type TestAnswer struct {
-	ControllerCount int `yaml:"controllerCount,omitempty"`
-	EtcdCount       int `yaml:"etcdCount,omitempty"`
+type TestConfig struct {
+	ControllerCount int    `yaml:"controllerCount,omitempty"`
+	EtcdCount       int    `yaml:"etcdCount,omitempty"`
+	UpgradeISOURL   string `yaml:"upgradeISOURL,omitempty"`
+}
+
+func loadTestConfig() error {
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	configPath := flag.String("testconfig", path.Join(userHome, "test_config.yaml"), "path to the test config file")
+	flag.Parse()
+	logrus.Infof("using test config path: %s", *configPath)
+	data, err := os.ReadFile(*configPath)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(data, &testConfig)
+	if err != nil {
+		return fmt.Errorf("fail to unmarshal answer file: %v", err)
+	}
+	logrus.Infof("test config: %+v", testConfig)
+
+	return nil
 }
 
 func TestMain(m *testing.M) {
-	data, err := os.ReadFile("/home/kiefer/codes/try-harvester/test_answer.yaml")
+	err := loadTestConfig()
 	if err != nil {
-		fmt.Println("fail to read answer file: ", err)
+		fmt.Println("fail to load test config:", err)
 		os.Exit(1)
 	}
-	err = yaml.Unmarshal(data, &testAnswer)
+
+	testenv, err = env.NewFromFlags()
 	if err != nil {
-		fmt.Println("fail to unmarshal answer file", err)
+		fmt.Println("fail to create test env:", err)
 		os.Exit(1)
 	}
-	testenv = env.NewWithKubeConfig("/home/kiefer/codes/try-harvester/kubeconfig")
 
 	r := testenv.EnvConf().Client().Resources()
 	err = harvv1api.AddToScheme(r.GetScheme())
 	if err != nil {
-		fmt.Println("fail to add to scheme: ", err)
+		fmt.Println("fail to add to scheme:", err)
 		os.Exit(1)
 	}
 
 	err = rancherv3.AddToScheme(r.GetScheme())
 	if err != nil {
-		fmt.Println("fail to add to scheme: ", err)
+		fmt.Println("fail to add to scheme:", err)
 		os.Exit(1)
 	}
 	os.Exit(testenv.Run(m))
@@ -75,7 +102,7 @@ func createVersion(ctx context.Context, t *testing.T, cfg *envconf.Config) conte
 			Name:      "v8.8.8",
 		},
 		Spec: harvv1api.VersionSpec{
-			ISOURL: "http://10.10.0.1/harvester/harvester.iso",
+			ISOURL: testConfig.UpgradeISOURL,
 		},
 	}
 
@@ -88,6 +115,10 @@ func createVersion(ctx context.Context, t *testing.T, cfg *envconf.Config) conte
 }
 
 func createUpgradeImage(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+	if testConfig.UpgradeISOURL == "" {
+		t.Fatal("upgradeISOURL is empty")
+	}
+
 	r := cfg.Client().Resources()
 
 	upgradeImage := &harvv1api.VirtualMachineImage{
@@ -100,7 +131,7 @@ func createUpgradeImage(ctx context.Context, t *testing.T, cfg *envconf.Config) 
 		},
 		Spec: harvv1api.VirtualMachineImageSpec{
 			DisplayName: "upgrade-iso",
-			URL:         "http://10.10.0.1/harvester/harvester.iso",
+			URL:         testConfig.UpgradeISOURL,
 			SourceType:  "download",
 			StorageClassParameters: map[string]string{
 				"mirroring":           "true",
