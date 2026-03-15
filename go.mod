@@ -13,15 +13,17 @@ replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
 	kubevirt.io/api => kubevirt.io/api v1.3.0
 	kubevirt.io/client-go => kubevirt.io/client-go v1.3.0
-
 )
 
 require (
 	github.com/harvester/harvester v0.0.2-0.20241101094502-82922af2cd42
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/wrangler/v3 v3.0.0
+	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/api v0.31.1
 	k8s.io/apimachinery v0.31.1
+	kubevirt.io/api v1.1.1
 	sigs.k8s.io/e2e-framework v0.5.0
 )
 
@@ -70,7 +72,6 @@ require (
 	github.com/rancher/norman v0.0.0-20240708202514-a0127673d1b9 // indirect
 	github.com/rancher/rke v1.6.2 // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/net v0.30.0 // indirect
@@ -84,7 +85,6 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.31.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.1 // indirect
 	k8s.io/apiserver v0.31.1 // indirect
 	k8s.io/client-go v12.0.0+incompatible // indirect
@@ -93,7 +93,6 @@ require (
 	k8s.io/kube-openapi v0.30.0 // indirect
 	k8s.io/kubernetes v1.31.1 // indirect
 	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6 // indirect
-	kubevirt.io/api v1.1.1 // indirect
 	kubevirt.io/containerized-data-importer-api v1.57.0-alpha1 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
 	sigs.k8s.io/cli-utils v0.35.0 // indirect
